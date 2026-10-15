@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engly - Aprende inglés</title>
+
+<style>
+:root {
+  --blue: #5146e5;
+  --green: #b8f34a;
+  --orange: #ff914d;
+  --purple: #8b5cf6;
+  --bg: #f3f4ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: #202044;
+  padding-bottom: 90px;
+}
+
+header {
+  background: linear-gradient(135deg, #5146e5, #8b5cf6);
+  color: white;
+  padding: 24px 20px 35px;
+  border-radius: 0 0 28px 28px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+header p {
+  margin-bottom: 0;
+}
+
+main {
+  padding: 18px;
+  max-width: 650px;
+  margin: auto;
+}
+
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 5px 18px #3934a51a;
+}
+
+.hero {
+  background: linear-gradient(135deg, #5146e5, #7767ff);
+  color: white;
+}
+
+.engy {
+  font-size: 60px;
+  text-align: center;
+  margin: 8px;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 17px;
+  background: var(--blue);
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+.hero button {
+  background: var(--green);
+  color: #202044;
+  width: 100%;
+}
+
+.progress {
+  height: 10px;
+  background: #e4e4f3;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress div {
+  height: 100%;
+  background: var(--green);
+  transition: width .3s;
+}
+
+nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 10px 3px;
+  box-shadow: 0 -4px 18px #00000012;
+  z-index: 10;
+}
+
+nav button {
+  background: transparent;
+  color: #777;
+  padding: 8px 3px;
+  font-size: 11px;
+  margin: 0;
+}
+
+nav button.active {
+  color: var(--blue);
+  background: #eeeeff;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #f0efff;
+  color: #28234f;
+  border: 2px solid transparent;
+}
+
+.option:hover {
+  border-color: var(--purple);
+}
+
+.feedback {
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.small {
+  color: #777;
+  font-size: 14px;
+}
+
+.word {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  body {
+    padding-bottom: 95px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🦊 Engly</h1>
+  <p id="greeting">¡Hola, estudiante!</p>
+  <p>✨ ¡Aprender inglés puede ser una aventura!</p>
+</header>
+
+<main id="app"></main>
+
+<nav>
+  <button data-page="Inicio" onclick="showPage('Inicio')">🏠<br>Inicio</button>
+  <button data-page="Lecciones" onclick="showPage('Lecciones')">📚<br>Lecciones</button>
+  <button data-page="Practica" onclick="showPage('Practica')">🎮<br>Práctica</button>
+  <button data-page="Vocabulario" onclick="showPage('Vocabulario')">🔤<br>Vocabulario</button>
+  <button data-page="Progreso" onclick="showPage('Progreso')">🏆<br>Progreso</button>
+</nav>
+
+<script>
+const defaultData = {
+  name: "",
+  points: 0,
+  streak: 0,
+  lastStudy: "",
+  completed: [],
+  progress: {},
+  learned: [],
+  quizScores: []
+};
+
+let data;
+
+try {
+  data = {
+    ...defaultData,
+    ...JSON.parse(localStorage.getItem("englyData") || "{}")
+  };
+} catch {
+  data = { ...defaultData };
+}
+
+function save() {
+  localStorage.setItem("englyData", JSON.stringify(data));
+}
+
+if (!data.name) {
+  const name = prompt("¡Bienvenido a Engly! ¿Cómo te llamas?");
+  data.name = name && name.trim() ? name.trim() : "Estudiante";
+  save();
+}
+
+document.getElementById("greeting").textContent =
+  "¡Hola, " + data.name + "! 👋";
+
+const lessons = [
+  {
+    title: "Present Simple",
+    desc: "Aprende a hablar de hábitos y rutinas.",
+    progress: 40,
+    icon: "🌞"
+  },
+  {
+    title: "Past Simple",
+    desc: "Habla de acciones del pasado.",
+    progress: 15,
+    icon: "⏳"
+  },
+  {
+    title: "Present Continuous",
+    desc: "Describe lo que ocurre ahora.",
+    progress: 0,
+    icon: "⚡"
+  },
+  {
+    title: "Daily Routines",
+    desc: "Aprende palabras sobre rutinas diarias.",
+    progress: 70,
+    icon: "📖"
+  }
+];
+
+let currentLesson = "Present Simple";
+let activityIndex = 0;
+let lessonScore = 0;
+let currentQuestion = 0;
+let vocabularyIndex = 0;
+let cardFlipped = false;
+let selectedAnswers = {};
+
+const questions = [
+  {
+    q: "She ___ to school every day.",
+    options: ["go", "goes", "going", "went"],
+    answer: "goes",
+    explanation: "Con he, she e it, normalmente añadimos -s o -es."
+  },
+  {
+    q: "I ___ football on Sundays.",
+    options: ["plays", "play", "playing", "played"],
+    answer: "play",
+    explanation: "Con I utilizamos la forma base del verbo."
+  },
+  {
+    q: "He ___ like coffee.",
+    options: ["don't", "doesn't", "isn't", "not"],
+    answer: "doesn't",
+    explanation: "La forma negativa con he es doesn't + verbo base."
+  },
+  {
+    q: "___ you study English?",
+    options: ["Does", "Are", "Do", "Is"],
+    answer: "Do",
+    explanation: "Con you usamos Do para hacer preguntas."
+  },
+  {
+    q: "They ___ English every day.",
+    options: ["studies", "study", "studying", "studied"],
+    answer: "study",
+    explanation: "Con they utilizamos la forma base del verbo."
+  }
+];
+
+const words = [
+  ["Apple", "Manzana", "I eat an apple."],
+  ["House", "Casa", "My house is big."],
+  ["Beautiful", "Hermoso/a", "It is beautiful."],
+  ["Quickly", "Rápidamente", "She runs quickly."],
+  ["Adventure", "Aventura", "It is an adventure."],
+  ["Friend", "Amigo/a", "He is my friend."],
+  ["School", "Escuela", "I go to school."],
+  ["Happy", "Feliz", "I am happy."],
+  ["Travel", "Viajar", "I like to travel."],
+  ["Music", "Música", "I love music."]
+];
+
+function updateStreak() {
+  const today = new Date().toLocaleDateString("en-CA");
+  if (data.lastStudy === today) return;
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = yesterday.toLocaleDateString("en-CA");
+
+  data.streak = data.lastStudy === yesterdayKey
+    ? data.streak + 1
+    : 1;
+
+  data.lastStudy = today;
+  save();
+}
+
+function showPage(page) {
+  document.querySelectorAll("nav button").forEach(button => {
+    button.classList.toggle("active", button.dataset.page === page);
+  });
+
+  const app = document.getElementById("app");
+
+  if (page === "Inicio") {
+    app.innerHTML = `
+      <div class="engy">🦊🎧</div>
+      <section class="card hero">
+        <h2>¡Vamos, ${escapeHTML(data.name)}!</h2>
+        <p>🔥 ${data.streak} días seguidos de aprendizaje</p>
+        <h3>Continúa tu lección</h3>
+        <p>Present Simple</p>
+        <div class="progress">
+          <div style="width:${getProgress("Present Simple")}%"></div>
+        </div>
+        <p>${getProgress("Present Simple")}% completado</p>
+        <button onclick="startLesson('Present Simple')">Continuar 🚀</button>
+      </section>
+      <h2>Para ti hoy ✨</h2>
+      <section class="card">
+        <h3>📘 Lección del día</h3>
+        <p>Descubre cómo describir lo que está pasando ahora.</p>
+        <button onclick="startLesson('Present Continuous')">Empezar</button>
+      </section>
+      <section class="card">
+        <h3>🎮 Repaso rápido</h3>
+        <p>Practica vocabulario y demuestra lo que sabes.</p>
+        <button onclick="startQuiz()">Jugar ahora</button>
+      </section>`;
+  }
+
+  if (page === "Lecciones") {
+    app.innerHTML = "<h2>📚 Tus lecciones</h2>" +
+      lessons.map(lesson => `
+        <section class="card">
+          <h3>${lesson.icon} ${lesson.title}</h3>
+          <p>${lesson.desc}</p>
+          <div class="progress">
+            <div style="width:${getProgress(lesson.title)}%"></div>
+          </div>
+          <p>${getProgress(lesson.title)}% completado</p>
+          <button onclick="startLesson('${lesson.title}')">
+            ${getProgress(lesson.title) ? "Continuar" : "Empezar"}
+          </button>
+        </section>`).join("");
+  }
+
+  if (page === "Practica") {
+    app.innerHTML = `
+      <h2>🎮 Zona de práctica</h2>
+      <section class="card">
+        <h3>🧠 Gramática</h3>
+        <p>Practica tus conocimientos de inglés.</p>
+        <button onclick="startLesson('Present Simple')">Practicar</button>
+      </section>
+      <section class="card">
+        <h3>🎧 Listening</h3>
+        <p>Escucha una frase en inglés.</p>
+        <button onclick="listen('I study English every day.')">▶ Escuchar</button>
+      </section>
+      <section class="card">
+        <h3>🗣️ Speaking</h3>
+        <p>Escucha y repite: I love learning English.</p>
+        <button onclick="listen('I love learning English.')">Escuchar modelo</button>
+        <button onclick="speakPractice()">🎤 Practicar voz</button>
+        <p id="speechFeedback"></p>
+      </section>
+      <section class="card">
+        <h3>⚡ Quiz rápido</h3>
+        <button onclick="startQuiz()">Iniciar quiz</button>
+      </section>`;
+  }
+
+  if (page === "Vocabulario") {
+    vocabularyIndex = 0;
+    cardFlipped = false;
+    renderVocabulary();
+  }
+
+  if (page === "Progreso") {
+    app.innerHTML = `
+      <div class="engy">🦊🏆</div>
+      <h2>Mi progreso</h2>
+      <section class="card">
+        <h3>¡Hola, ${escapeHTML(data.name)}!</h3>
+        <p>⭐ Puntos acumulados: ${data.points}</p>
+        <p>🔥 Racha actual: ${data.streak} días</p>
+        <p>📚 Lecciones completadas: ${data.completed.length}</p>
+        <p>🔤 Palabras aprendidas: ${data.learned.length}</p>
+      </section>
+      <section class="card">
+        <h3>🏅 Mis logros</h3>
+        <p>${data.completed.length >= 1 ? "🏆 Primera lección completada" : "🔒 Completa tu primera lección"}</p>
+        <p>${data.learned.length >= 10 ? "🌟 Diez palabras aprendidas" : "🔒 Aprende diez palabras"}</p>
+        <p>${data.streak >= 3 ? "🔥 Racha de tres días" : "🔒 Estudia tres días consecutivos"}</p>
+      </section>`;
+  }
+}
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function getProgress(title) {
+  if (data.completed.includes(title)) return 100;
+  if (data.progress[title] !== undefined) return data.progress[title];
+  const lesson = lessons.find(item => item.title === title);
+  return lesson ? lesson.progress : 0;
+}
+
+function startLesson(title) {
+  currentLesson = title;
+  activityIndex = 0;
+  lessonScore = 0;
+  currentQuestion = 0;
+  selectedAnswers = {};
+  updateStreak();
+  renderLesson();
+}
+
+function renderLesson() {
+  const app = document.getElementById("app");
+
+  if (currentLesson === "Daily Routines") {
+    app.innerHTML = `
+      <button onclick="showPage('Lecciones')">← Volver</button>
+      <h2>📖 Daily Routines</h2>
+      <section class="card">
+        <p>Aprende palabras sobre tus actividades diarias.</p>
+        <p>Wake up = Despertarse</p>
+        <p>Have breakfast = Desayunar</p>
+        <p>Go to school = Ir a la escuela</p>
+        <p>Do homework = Hacer tareas</p>
+        <p>Go to bed = Ir a dormir</p>
+        <button onclick="showPage('Vocabulario')">Practicar vocabulario</button>
+        <button onclick="finishLesson()">Terminar lección</button>
+      </section>`;
+    return;
+  }
+
+  const isContinuous = currentLesson === "Present Continuous";
+  const isPast = currentLesson === "Past Simple";
+  const explanation = isContinuous
+    ? "Usamos am/is/are + verbo terminado en -ing para acciones que ocurren ahora. Ejemplo: She is studying. = Ella está estudiando."
+    : isPast
+    ? "Usamos el pasado simple para acciones terminadas en el pasado. Ejemplo: I played football yesterday. = Jugué fútbol ayer."
+    : "Usamos el Present Simple para hábitos y hechos generales. Con he, she e it, normalmente añadimos -s o -es al verbo.";
+
+  const current = questions[currentQuestion % questions.length];
+
+  app.innerHTML = `
+    <button onclick="showPage('Lecciones')">← Volver</button>
+    <div class="engy">🦊🎧</div>
+    <h2>${escapeHTML(currentLesson)}</h2>
+    <section class="card">
+      <h3>📘 Aprende con Engy</h3>
+      <p>${explanation}</p>
+      <p><b>Ejemplo:</b> ${isContinuous ? "I am learning English." : isPast ? "I studied yesterday." : "She studies English every day."}</p>
+      <button onclick="listen('${isContinuous ? "I am learning English." : isPast ? "I studied yesterday." : "She studies English every day."}')">🔊 Escuchar ejemplo</button>
+    </section>
+    <section class="card">
+      <h3>🎯 Actividad ${currentQuestion + 1} de 5</h3>
+      <p>${current.q}</p>
+      ${current.options.map(option =>
+        `<button class="option" onclick="answerQuestion('${escapeHTML(option)}')">${escapeHTML(option)}</button>`
+      ).join("")}
+      <div id="feedback" class="feedback"></div>
+      <button id="nextButton" class="hidden" onclick="nextQuestion()">Siguiente →</button>
+      <p>⭐ Puntos de esta lección: ${lessonScore}</p>
+    </section>
+    <button onclick="finishLesson()">Terminar lección</button>`;
+}
+
+function answerQuestion(answer) {
+  if (selectedAnswers[currentQuestion]) return;
+  selectedAnswers[currentQuestion] = true;
+
+  const question = questions[currentQuestion % questions.length];
+  const feedback = document.getElementById("feedback");
+  const correct = answer === question.answer;
+
+  if (correct) {
+    lessonScore += 10;
+    data.points += 10;
+    feedback.textContent = "✅ ¡Correcto! " + question.explanation;
+    feedback.style.color = "green";
+  } else {
+    feedback.textContent = "💡 La respuesta correcta es " + question.answer + ". " + question.explanation;
+    feedback.style.color = "#d35400";
+  }
+
+  data.progress[currentLesson] = Math.min(
+    95,
+    Math.max(getProgress(currentLesson), Math.round((currentQuestion + 1) / 5 * 100))
+  );
+
+  save();
+  document.getElementById("nextButton").classList.remove("hidden");
+}
+
+function nextQuestion() {
+  if (currentQuestion < 4) {
+    currentQuestion++;
+    renderLesson();
+  } else {
+    document.getElementById("app").innerHTML = `
+      <div class="engy">🦊🎉</div>
+      <section class="card">
+        <h2>¡Muy bien!</h2>
+        <p>Has terminado las preguntas de ${escapeHTML(currentLesson)}.</p>
+        <p>⭐ Puntos de esta ronda: ${lessonScore}</p>
+        <button onclick="finishLesson()">Terminar lección</button>
+        <button onclick="startLesson(currentLesson)">Repetir</button>
+      </section>`;
+  }
+}
+
+function finishLesson() {
+  if (!data.completed.includes(currentLesson)) {
+    data.completed.push(currentLesson);
+  }
+  data.progress[currentLesson] = 100;
+  save();
+
+  document.getElementById("app").innerHTML = `
+    <div class="engy">🦊🎉🏆</div>
+    <section class="card hero">
+      <h2>¡Lección completada!</h2>
+      <p>Engy está orgulloso de ti, ${escapeHTML(data.name)}.</p>
+      <p>⭐ Puntos ganados en esta ronda: ${lessonScore}</p>
+      <button onclick="showPage('Inicio')">Volver a Inicio</button>
+      <button onclick="showPage('Lecciones')">Otras lecciones</button>
+    </section>`;
+}
+
+function startQuiz() {
+  startLesson("Present Simple");
+}
+
+function renderVocabulary() {
+  const word = words[vocabularyIndex];
+  document.getElementById("app").innerHTML = `
+    <h2>🔤 Vocabulario</h2>
+    <section class="card">
+      <input id="searchWord" placeholder="Buscar palabra..." style="width:100%;padding:12px;border-radius:10px;border:1px solid #ddd" oninput="filterWords(this.value)">
+      <p class="small">Flashcards</p>
+      <div class="word" onclick="flipCard()">${cardFlipped ? escapeHTML(word[1]) : escapeHTML(word[0])}</div>
+      ${cardFlipped ? `<p>${escapeHTML(word[2])}</p>` : "<p class='small'>Toca la tarjeta para ver su significado.</p>"}
+      <button onclick="flipCard()">🔄 Voltear</button>
+      <button onclick="learnWord()">Sé</button>
+      <button onclick="nextWord()">No sé / Siguiente</button>
+      <p>Palabra ${vocabularyIndex + 1} de ${words.length}</p>
+      <div class="progress"><div style="width:${(vocabularyIndex + 1) / words.length * 100}%"></div></div>
+      <div id="wordResults"></div>
+    </section>`;
+}
+
+function flipCard() {
+  cardFlipped = !cardFlipped;
+  renderVocabulary();
+}
+
+function learnWord() {
+  const word = words[vocabularyIndex][0];
+  if (!data.learned.includes(word)) {
+    data.learned.push(word);
+    data.points += 5;
+  }
+  save();
+  nextWord();
+}
+
+function nextWord() {
+  vocabularyIndex = (vocabularyIndex + 1) % words.length;
+  cardFlipped = false;
+  renderVocabulary();
+}
+
+function filterWords(value) {
+  const results = words.filter(word =>
+    word.join(" ").toLowerCase().includes(value.toLowerCase())
+  );
+
+  document.getElementById("wordResults").innerHTML = results.length
+    ? results.map(word => `<p><b>${escapeHTML(word[0])}</b> — ${escapeHTML(word[1])}</p>`).join("")
+    : "<p>No se encontraron palabras.</p>";
+}
+
+function listen(text) {
+  if (!("speechSynthesis" in window)) {
+    alert("Tu navegador no admite audio automático. Intenta con otro navegador.");
+    return;
+  }
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.85;
+  speechSynthesis.speak(utterance);
+}
+
+function speakPractice() {
+  const feedback = document.getElementById("speechFeedback");
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    feedback.textContent = "Tu navegador no admite reconocimiento de voz. Escucha la frase y repítela en voz alta.";
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  feedback.textContent = "Escuchando... Di: I love learning English.";
+
+  recognition.onresult = event => {
+    const said = event.results[0][0].transcript;
+    feedback.textContent = "Has dicho: " + said + ". Compara tu frase con el modelo.";
+  };
+
+  recognition.onerror = () => {
+    feedback.textContent = "No se pudo capturar la voz. Revisa los permisos del micrófono.";
+  };
+
+  recognition.start();
+}
+
+showPage("Inicio");
+</script>
+
+</body>
+</html>
